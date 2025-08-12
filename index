@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF/Image to Text Extractor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .card-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        label {
+            font-weight: 500;
+        }
+
+        textarea#result {
+            resize: vertical;
+            min-height: 300px;
+            background: #fdfdfd;
+            border: 1px solid #ced4da;
+            padding: 15px;
+            font-family: monospace;
+        }
+
+        .btn-primary {
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .btn-success {
+            float: right;
+        }
+
+        @media (max-width: 576px) {
+            .btn-success {
+                width: 100%;
+                float: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <h2>📄 Image/PDF to Text Extractor</h2>
+
+        <form id="upload-form">
+            <div class="mb-3">
+                <label for="file" class="form-label">Choose Images or PDFs:</label>
+                <input type="file" name="files[]" id="file" class="form-control" multiple required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Choose Language:</label>
+                <select name="language" class="form-select" id="language">
+				<option value="ben">Bangla</option>
+                    <option value="eng">English</option>
+                    
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">🔍 Extract Text</button>
+        </form>
+
+        <div class="mt-4">
+            <label for="result" class="form-label">Extracted Text:</label>
+            <textarea id="result" class="form-control" placeholder="Text will appear here..."></textarea>
+            <button onclick="copyText()" class="btn btn-success mt-2">📋 Copy Text</button>
+        </div>
+    </div>
+
+<script>
+document.getElementById('upload-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+    const files = document.getElementById('file').files;
+    const language = document.getElementById('language').value;
+
+    for (let i = 0; i < files.length; i++) {
+        formData.append('files[]', files[i]);
+    }
+    formData.append('language', language);
+
+    const resultBox = document.getElementById('result');
+    resultBox.value = "⏳ Extracting text...";
+
+    try {
+        const res = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        resultBox.value = data.text || "❌ No text found.";
+    } catch (err) {
+        console.error(err);
+        resultBox.value = "❌ Error occurred.";
+    }
+});
+
+function copyText() {
+    const textarea = document.getElementById("result");
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    
+}
+</script>
+</body>
+</html>
